@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #f8fafc;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-card border border-surface-3 shadow-card;
+  }
+  .card-hover {
+    @apply card transition-shadow duration-200 hover:shadow-card-hover;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-btn text-sm font-medium transition-all duration-150 cursor-pointer select-none border;
+  }
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white border-brand-600 hover:bg-brand-700 active:scale-[0.98];
+  }
+  .btn-secondary {
+    @apply btn bg-white text-ink-secondary border-surface-3 hover:bg-surface-1 hover:border-ink-disabled;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-secondary border-transparent hover:bg-surface-2 hover:text-ink-primary;
+  }
+  .btn-danger {
+    @apply btn bg-danger-600 text-white border-danger-600 hover:bg-danger-700;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-badge text-xs font-medium;
+  }
+  .badge-red { @apply badge bg-danger-50 text-danger-700; }
+  .badge-amber { @apply badge bg-warn-50 text-warn-600; }
+  .badge-green { @apply badge bg-success-50 text-success-700; }
+  .badge-blue { @apply badge bg-brand-50 text-brand-700; }
+  .badge-gray { @apply badge bg-surface-2 text-ink-tertiary; }
+  .input {
+    @apply w-full px-3 py-2 text-sm bg-white border border-surface-3 rounded-btn text-ink-primary placeholder-ink-disabled transition-colors duration-150 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+  }
+  .label {
+    @apply block text-xs font-medium text-ink-tertiary uppercase tracking-wide mb-1.5;
+  }
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-medium text-ink-tertiary cursor-pointer transition-all duration-150 hover:text-ink-primary hover:bg-surface-2 select-none;
+  }
+  .nav-item.active {
+    @apply bg-brand-50 text-brand-700 hover:bg-brand-100;
+  }
+  .page-enter {
+    animation: fadeIn 0.2s ease, slideUp 0.2s ease;
+  }
+  .divider {
+    @apply border-t border-surface-3;
+  }
+  .stat-delta-up {
+    @apply text-success-600 text-xs font-medium;
+  }
+  .stat-delta-down {
+    @apply text-danger-600 text-xs font-medium;
+  }
+}
+
+/* Progress bar animation */
+.progress-bar { transition: width 1.2s cubic-bezier(0.34, 1, 0.64, 1); }
+
+/* Map container */
+#ymap-container { width: 100%; height: 100%; }
+
+/* Confidence bar animation */
+.conf-bar { 
+  transition: width 1.4s cubic-bezier(0.34, 1, 0.64, 1);
+  transform-origin: left;
+}
+
+/* Detection bbox animation */
+.detection-box {
+  animation: detectAppear 0.4s ease forwards;
+  opacity: 0;
+}
+
+/* Toast animations */
+.toast-enter {
+  animation: slideIn 0.2s ease forwards;
+}
+.toast-exit {
+  animation: fadeOut 0.15s ease forwards;
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(20px); }
+}
+
+/* Chart tooltip */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+
+/* ── Mobile / touch improvements ── */
+@layer base {
+  /* Remove tap highlight flash on iOS */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* Prevent text size adjustment on orientation change */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* Better touch scrolling */
+  body { -webkit-overflow-scrolling: touch; }
+
+  /* Inputs don't zoom on iOS (font-size must be ≥ 16px) */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* On larger screens revert to design size */
+  @media (min-width: 640px) {
+    input, select, textarea {
+      font-size: 0.875rem; /* 14px = text-sm */
+    }
+  }
+}
+
+/* Sidebar slide transition */
+aside { will-change: transform; }
+
+/* Safe area padding for devices with notch/home bar */
+.main-content {
+  padding-bottom: env(safe-area-inset-bottom);
+}

@@ -1,0 +1,87 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────
+#  InspectAI — Docker Compose (PostgreSQL + FastAPI + React)
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: inspectai_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-inspectai}
+      POSTGRES_USER: ${POSTGRES_USER:-inspectai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-inspectai_secret}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-inspectai} -d ${POSTGRES_DB:-inspectai}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── FastAPI Backend ───────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: inspectai_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+      - ./ml_pipeline:/ml_pipeline
+      - media_data:/app/media
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-inspectai}:${POSTGRES_PASSWORD:-inspectai_secret}@db:5432/${POSTGRES_DB:-inspectai}
+      SECRET_KEY: ${SECRET_KEY:-change-this-very-long-secret-key-in-production}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+      CORS_ORIGINS: '["http://localhost:5173","http://localhost:3000","http://localhost:${BACKEND_PORT:-8000}"]'
+      UPLOAD_DIR: media/uploads
+      ANNOTATED_DIR: media/annotated
+      REPORTS_DIR: media/reports
+      ML_MODEL_PATH: /ml_pipeline/weights/best.pt
+      ML_CONF_THRESHOLD: "0.25"
+      ML_IOU_THRESHOLD: "0.45"
+      ML_ENABLE_OCR: "true"
+      ML_ENABLE_SEGFORMER: "false"
+      YANDEX_MAPS_KEY: ${YANDEX_MAPS_KEY:-18b8b2f0-8ed1-4a6d-b465-fdf5c0b3106f}
+      DEBUG: "false"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/docs"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ── React Frontend (nginx) ────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: inspectai_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+
+volumes:
+  postgres_data:
+    driver: local
+  media_data:
+    driver: local

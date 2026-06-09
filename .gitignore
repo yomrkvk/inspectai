@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Node
+node_modules/
+dist/
+.cache/
+
+# DB / media (не коммитим данные)
+backend/inspectai.db
+backend/media/
+media/
+
+# ML weights (большие файлы — хранить в Git LFS или отдельно)
+ml_pipeline/weights/*.pt
+ml_pipeline/*.pth
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+uvicorn.log
+
+# Docker volumes
+postgres_data/
